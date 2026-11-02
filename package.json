@@ -1,0 +1,7 @@
+{
+  "name": "penghu-voyage-prototype",
+  "version": "0.2.0",
+  "private": true,
+  "description": "离线可玩的明末回合制海盗原型",
+  "scripts": { "start": "node server.js", "test": "node --test tests/engine.test.js" }
+}

@@ -1,0 +1,9 @@
+node_modules/
+screenshots/
+.env
+.env.*
+*.log
+.DS_Store
+Thumbs.db
+.codex/
+.agents/
