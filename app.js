@@ -3,7 +3,7 @@
   const $=s=>document.querySelector(s),W=PirateWorld,STORE='penghu-voyage-v1',PREFS='penghu-parameters-v1';
   const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const copy=x=>JSON.parse(JSON.stringify(x));
-  let game,settings=copy(PIRATE_CONFIG),saveAvailable=true,saved=null,tab='hold',selection=null,center=null,toastTimer,pan=null,mapMetrics=null,activeModal=null;
+  let game,settings=copy(PIRATE_CONFIG),saveAvailable=true,saved=null,tab='hold',selection=null,center=null,toastTimer,pan=null,mapMetrics=null,activeModal=null,decisionContext=null;
   try{const p=JSON.parse(localStorage.getItem(PREFS));if(p?.version===1)settings=p;const raw=JSON.parse(localStorage.getItem(STORE));if(raw?.version===1&&raw.state&&raw.config)saved=raw;}catch{saveAvailable=false;}
   settings.morale={...PIRATE_CONFIG.morale,...settings.morale};
   delete settings.morale.silverPerCrew;
@@ -13,28 +13,32 @@
   const ship=new Image();ship.src=game.config.assets.ship;ship.onload=()=>drawMap();
   function persist(){try{localStorage.setItem(STORE,JSON.stringify(game.export()));}catch{saveAvailable=false;}$('#save-label').textContent=saveAvailable?'本机自动保存 · 原型 v0.2':'当前浏览器未允许存档 · 请保持页面开启';}
   function toast(message){if(!message)return;$('#toast').textContent=message;$('#toast').classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('#toast').classList.remove('show'),3600);}
-  function act(fn,{locate=false}={}){const oldDay=game.s.day,oldLog=game.s.log[0];const result=fn();if(result?.message)toast(result.message);if(locate){selection={x:game.s.x,y:game.s.y};center={...selection};}render();persist();if(!result?.message&&game.s.log[0]!==oldLog)toast(game.s.log[0].text);if(game.s.event&&game.s.day!==oldDay&&innerWidth<761)$('#decision').scrollIntoView({behavior:'smooth',block:'nearest'});}
+  function act(fn,{locate=false}={}){const oldLog=game.s.log[0];const result=fn();if(result?.message)toast(result.message);if(locate){selection={x:game.s.x,y:game.s.y};center={...selection};}render();persist();if(!result?.message&&game.s.log[0]!==oldLog)toast(game.s.log[0].text);}
   const button=(label,action,extra='',cls='')=>`<button class="${cls}" data-action="${action}" ${extra}>${label}</button>`;
   const signed=n=>n>0?`+${n}`:String(n);
   function render(){
     const s=game.s,stats=game.stats(),cell=game.cell(),port=game.port(),morale=game.morale(),pay=game.payroll();
     $('#turn-label').textContent=`航海第 ${s.day} 日`;
     $('#weather-label').textContent=`${s.weather} · ${s.flag?game.faction(s.flag)+'旗':'未悬挂阵营旗帜'}`;
-    $('#location-label').textContent=port?`${port.name}${port.id==='penghu'?'锚地':'港'}`:cell.type==='coast'?'沿岸村落':'西太平洋 · 航行中';
+    $('#location-label').textContent=port?`${port.name}${port.id==='penghu'?'锚地':'港'}`:cell.type==='coast'?'沿岸村落':'海上航行';
     $('#position-label').textContent=`${cell.lat.toFixed(1)}° N / ${cell.lon.toFixed(1)}° E`;
     const stat=(symbol,label,value,total,detail,percent,warn=false)=>`<div class="stat ${warn?'warn':''}"><span class="stat-icon">${symbol}</span><div><div class="stat-top"><span class="stat-label">${label}</span><span class="stat-number">${value}${total?`<small> / ${total}</small>`:''}</span></div>${percent!==null?`<div class="meter"><span style="width:${Math.max(0,Math.min(100,percent))}%"></span></div>`:''}<span class="stat-detail">${detail}</span></div></div>`;
-    $('#stats').innerHTML=stat('舟','船体',s.hp,stats.maxHp,'港口维修 · 2 两 / 点',s.hp/stats.maxHp*100,s.hp<30)+stat('糧','补给',s.supplies,100,`每日消耗 ${stats.food} · 粮食可转补给`,s.supplies,s.supplies<20)+stat('銀','银两',s.silver,'',`下次工钱 ${pay.total} 两 · ${pay.daysUntil} 日后`,null,s.silver<pay.total)+stat('衆','船员',s.crew,s.crewMax,`货舱 ${game.occupied()} / ${stats.capacity} · 炮击 ${stats.damage}`,null,s.crew<6);
+    $('#stats').innerHTML=stat('舟','船体',s.hp,stats.maxHp,'维修 2 两/点',s.hp/stats.maxHp*100,s.hp<30)+stat('糧','补给',s.supplies,100,`日耗 ${stats.food} 点`,s.supplies,s.supplies<20)+stat('銀','银两',s.silver,'',`${pay.daysUntil} 日后发薪 ${pay.total} 两`,null,s.silver<pay.total)+stat('衆','船员',s.crew,s.crewMax,`货 ${game.occupied()}/${stats.capacity} · 炮 ${stats.damage}`,null,s.crew<6);
     $('#escort-strip').innerHTML=s.escort?`<div class="escort-bar"><div>护航中 → <strong>${esc(s.escort.destination.name)}</strong><small>剩余 ${s.escort.route.length} 格 · 抵达后 ${s.escort.reward} 两 / 关系 +15</small></div>${button('跟随商船 →','follow','', 'primary')}${button('结束护航','endEscort')}</div>`:'';
     $('#morale').classList.toggle('low',morale.value<50);
-    $('#morale').innerHTML=`<div class="morale-summary"><strong>士气 ${morale.value}/100</strong><span>${morale.label} · 伤害 ${Math.round(morale.power*100)}%</span><div class="meter"><span style="width:${morale.value}%"></span></div></div><small>每人工资 ${pay.rate} 两 / ${pay.every} 日 · 0 两零士气，2 两满士气</small>${button('调整工资','wages',s.dead?'disabled':'','wage-entry')}`;
+    $('#morale').innerHTML=`<div class="morale-summary"><strong>士气 ${morale.value}/100</strong><span>${morale.label} · 伤害 ${Math.round(morale.power*100)}%</span><div class="meter"><span style="width:${morale.value}%"></span></div></div><small>工钱 ${pay.rate} 两/人 · 每 ${pay.every} 日</small>${button('调整工资','wages',s.dead?'disabled':'','wage-entry')}`;
     renderDecision();
     renderQuests();renderDeck();drawMap();
     if(activeModal==='shipyard'&&$('#modal').open)openShipyard();
   }
   function renderDecision(){
+    const panel=$('#decision'),s=game.s,pos=selection||s;
+    const context=s.dead?'ended':s.combat?'combat':s.event?`event:${s.event.type}:${s.x},${s.y}`:`tile:${pos.x},${pos.y}`;
+    const scrollTop=context===decisionContext?panel.scrollTop:0;
     renderDecisionBody();
-    const s=game.s,stats=game.stats(),morale=game.morale();
+    const stats=game.stats(),morale=game.morale();
     if(s.combat)$('#decision').insertAdjacentHTML('afterbegin',`<div class="combat-player">本船船体 <strong>${s.hp}/${stats.maxHp}</strong>　船员 <strong>${s.crew}</strong>　补给 <strong>${s.supplies}</strong><br>士气 <strong>${morale.value}/100</strong> · 本轮伤害发挥 <strong>${Math.round(morale.power*100)}%</strong></div>`);
+    panel.scrollTop=scrollTop;decisionContext=context;
   }
   function renderDecisionBody(){
     const s=game.s,el=$('#decision');
@@ -56,7 +60,7 @@
     if(info.type==='port'&&info.visible)detail=`${info.portData.flavor} ${game.canDock(info.portData)?'港口允许靠岸。':'当前身份遭港务拒绝。'}${info.plague?' 已发现疫病：靠岸将损失船员！':' 未发现疫病。'}`;
     if(info.reef)detail+=' 海图已标记暗礁，进入会损伤船体。';
     const adjacent=Math.max(Math.abs(pos.x-s.x),Math.abs(pos.y-s.y))===1;
-    el.innerHTML=`<p class="section-kicker">${at?'当前船位':'海图情报'} <span class="tag">${info.visible?'视野之内':'情报未知'}</span></p><h2>${esc(names[info.type])}</h2><p class="body-copy">${esc(detail)}</p>${info.type==='port'&&info.visible?`<p class="hint">需求：${game.market(info.portData).filter(g=>g.demand).map(g=>esc(g.name)).join('、')||'日用货物'} · 粮食买价 ${game.market(info.portData)[0].buy} 两</p>`:''}${!at?button(adjacent?'驶入此格 · 1 日':'距离较远，逐格前往','move',`data-x="${pos.x}" data-y="${pos.y}" ${!game.canMove(pos.x,pos.y)?'disabled':''}`,'primary full'):info.type==='coast'?button('与村落接触','coast','','primary full'):button('选取邻格，继续航行','recenter','','primary full')}<p class="hint">${s.escort?'当前正为商船护航，请使用海图下方「跟随商船」。':'每次移动消耗补给。斜向移动同样只需 1 日。'}</p>${nearby()}`;
+    el.innerHTML=`<p class="section-kicker">${at?'当前船位':'海图情报'} <span class="tag">${info.visible?'视野之内':'情报未知'}</span></p><h2>${esc(names[info.type])}</h2><p class="body-copy">${esc(detail)}</p>${info.type==='port'&&info.visible?`<p class="hint">需求：${game.market(info.portData).filter(g=>g.demand).map(g=>esc(g.name)).join('、')||'日用货物'} · 粮食买价 ${game.market(info.portData)[0].buy} 两</p>`:''}${!at?button(adjacent?'驶入此格 · 1 日':'距离较远，逐格前往','move',`data-x="${pos.x}" data-y="${pos.y}" ${!game.canMove(pos.x,pos.y)?'disabled':''}`,'primary full'):info.type==='coast'?button('与村落接触','coast','','primary full'):button('选取邻格，继续航行','recenter','','primary full')}<p class="hint">${s.escort?'当前正为商船护航，请使用右侧「跟随商船」。':'每次移动消耗补给。斜向移动同样只需 1 日。'}</p>${nearby()}`;
   }
   function nearby(){const s=game.s,labels=['西北','北','东北','西','本船','东','西南','南','东南'];let html='<div class="nearby" aria-label="选择相邻海域">';let i=0;for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){const c=game.world.get(s.x+dx,s.y+dy);html+=button(labels[i++],'select',`data-x="${s.x+dx}" data-y="${s.y+dy}" ${!c||c.type==='land'?'disabled':''}`,dx===0&&dy===0?'center':'');}return html+'</div>';}
   function renderPort(el,p){
@@ -64,12 +68,14 @@
     el.innerHTML=`<p class="section-kicker">${p.id==='penghu'?'你的出发之地':'港口 · '+esc(game.faction(p.faction))}<span class="tag ${plague?'danger':''}">${plague?'疫病蔓延':'可见港情'}</span></p><h2>${esc(p.name)}${p.id==='penghu'?'，暂且靠岸。':'港'}</h2>${p.id==='penghu'&&s.day===1?`<div class="location-art"><img src="${esc(game.config.assets.portrait)}" alt="船长肖像"><p class="body-copy">战乱把你推向这座岛。<br>一条小船，一群等粮的同伴。<br>去海的另一边，找条生路。</p></div>`:`<p class="body-copy">${esc(p.flavor)}</p>`}${!access?`<div class="update-notice">港务拒绝补给与交易。你的有效关系为 ${game.effectiveRep(p.faction)}，需要高于 ${game.config.rules.hostilityThreshold}。${s.flag?'当前悬挂的旗帜也影响了关系。':''}</div>${button('查看旗帜与局势','relations','','full')}${nearby()}`:`${plague?'<div class="update-notice">当地有疫病，同一轮疫情只在首次靠岸时扣除船员。请留意航海日志。</div>':''}<div class="port-services">${button('修船<small>最多 +25 / 50 两</small>','service','data-value="repair"')}${button('补给<small>最多 +25 / 25 两</small>','service','data-value="supply"')}${button('招募 1 人<small>每次 5 两</small>','service',`data-value="recruit" ${s.silver<5||s.crew>=s.crewMax?'disabled':''}`)}</div>${button('<span>船坞 · 升级船体 / 火炮<small>货舱、火炮、船壳与帆装</small></span><span>→</span>','shipyard','','shipyard-entry')}<div class="trade-list">${game.market(p).map(g=>`<div class="trade-row"><div><strong>${esc(g.name)} ${g.demand?'<span class="tag">求购</span>':''}</strong><small>买 ${g.buy} / 卖 ${g.sell} 两 · 库 ${g.stock} / 持 ${s.cargo[g.id]}</small></div><div class="trade-actions"><input type="number" min="1" max="99" value="1" id="qty-${g.id}" aria-label="${esc(g.name)}交易数量"><button data-action="buy" data-value="${g.id}">买</button><button data-action="sell" data-value="${g.id}" ${s.cargo[g.id]<1?'disabled':''}>卖</button></div></div>`).join('')}</div>${p.id==='penghu'&&!s.quests.grain?button(`交付 ${game.config.rules.grainGoal} 担粮食（现有 ${s.cargo.grain}）`,'deliver',`${s.cargo.grain<game.config.rules.grainGoal?'disabled':''}`,'primary full'):''}<p class="hint">买卖、维修、招募不推进日期。离港：在海图点选相邻格。${p.id==='penghu'?'每次招募 1 人，船员上限 50 人；可在士气栏调整每人工资。':''}</p>`}`;
   }
   function renderQuests(){
-    const s=game.s,grain=game.config.rules.grainGoal,q=s.quests;let content=`<h3>此行所求 <small class="tag">航程委托</small></h3><div class="quest-line"><span class="quest-icon">${q.grain?'✓':'壹'}</span><div><strong>${q.grain?'澎湖的粮仓，已续上炊烟':'为澎湖带回粮食'}</strong><small>${q.grain?'同伴加入，海路由此展开。':`运回 ${grain} 担粮食 · 奖励 8 名船员 / 70 两`}</small>${!q.grain?`<div class="quest-progress"><span style="width:${Math.min(100,s.cargo.grain/grain*100)}%"></span></div><small>货舱粮食 ${s.cargo.grain} / ${grain}</small>${button('在海图上找澎湖','find','data-value="penghu"')}`:''}</div></div>`;
-    if(q.royal?.status==='aboard')content+=`<div class="quest-line"><span class="quest-icon">贰</span><div><strong>护送朱氏一家北上</strong><small>目的地：宁波 · 酬谢 180 两 / 大明 +30</small>${button('在海图上找宁波','find','data-value="ningbo"')}</div></div>`;
-    else if(q.royal?.status==='done')content+='<div class="quest-line"><span class="quest-icon">✓</span><div><strong>朱氏一家已平安上岸</strong><small>这段同行，成为了你的海上人情。</small></div></div>';
-    else if(q.grain&&!q.royal)content+='<div class="quest-line"><span class="quest-icon">贰</span><div><strong>更远的海路</strong><small>沿岸交锋可能带来新的同行者；与官府交好，也可到泉州寻求委任。</small></div></div>';
-    if(q.commission)content+=`<div class="quest-line"><span class="quest-icon">${q.commission.done?'✓':'叁'}</span><div><strong>${q.commission.done?'水师身份：已获招抚':'平盗委任'}</strong><small>击败海盗 ${Math.min(2,q.commission.kills)} / 2 · ${q.commission.done?'委任完成，可继续自由航行':'奖励 240 两 / 大明 +35'}</small></div></div>`;
-    $('#quests').innerHTML=content;
+    const s=game.s,grain=game.config.rules.grainGoal,q=s.quests;
+    const quest=(title,detail,status,port=null,progress=null)=>({done:status.startsWith('✓'),html:`<article class="quest-line"><div class="quest-copy"><strong>${title}</strong><small>${detail}</small>${progress!==null?`<div class="quest-progress"><span style="width:${progress}%"></span></div>`:''}</div><div class="quest-meta"><span>${status}</span>${port?button(`定位${port==='penghu'?'澎湖':'宁波'}`,'find',`data-value="${port}"`):''}</div></article>`});
+    const items=[quest(q.grain?'澎湖筹粮已完成':'为澎湖带回粮食',q.grain?'同伴加入，继续探索海路。':`运回 ${grain} 担 · 奖励 8 人 / 70 两`,q.grain?'✓ 完成':`${s.cargo.grain} / ${grain} 担`,q.grain?null:'penghu',q.grain?null:Math.min(100,s.cargo.grain/grain*100))];
+    if(q.royal?.status==='aboard')items.push(quest('护送朱氏一家北上','送至宁波 · 180 两 / 大明 +30','护送中','ningbo'));
+    else if(q.royal?.status==='done')items.push(quest('朱氏一家已平安上岸','这段同行，成为了你的海上人情。','✓ 完成'));
+    else if(q.grain&&!q.royal)items.push(quest('更远的海路','沿岸交锋或到泉州寻找新的委任。','待探索'));
+    if(q.commission)items.push(quest(q.commission.done?'水师身份：已获招抚':'平盗委任',q.commission.done?'委任完成，可继续自由航行':'击败海盗 · 奖励 240 两 / 大明 +35',q.commission.done?'✓ 完成':`${Math.min(2,q.commission.kills)} / 2 艘`));
+    $('#quests').innerHTML=items.sort((a,b)=>Number(a.done)-Number(b.done)).map(item=>item.html).join('');
   }
   function renderDeck(){
     const s=game.s;document.querySelectorAll('[data-tab]').forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===tab));
@@ -79,7 +85,7 @@
   }
   function drawMap(){
     const canvas=$('#map');if(!canvas||!center)return;const rect=canvas.getBoundingClientRect();if(!rect.width)return;const dpr=Math.min(devicePixelRatio||1,2),width=rect.width,height=rect.height;canvas.width=width*dpr;canvas.height=height*dpr;const ctx=canvas.getContext('2d');ctx.scale(dpr,dpr);
-    const size=innerWidth<761?52:59,left=center.x-width/(2*size),top=center.y-height/(2*size);mapMetrics={size,left,top,width,height};ctx.fillStyle='#1b4145';ctx.fillRect(0,0,width,height);
+    const size=innerWidth<761?Math.min(52,Math.max(32,Math.floor(width/3.3))):59,left=center.x+.5-width/(2*size),top=center.y+.5-height/(2*size);mapMetrics={size,left,top,width,height};ctx.fillStyle='#1b4145';ctx.fillRect(0,0,width,height);
     const sx=Math.floor(left),sy=Math.floor(top),ex=Math.ceil(left+width/size),ey=Math.ceil(top+height/size);
     for(let y=sy;y<=ey;y++)for(let x=sx;x<=ex;x++){
       const c=game.world.get(x,y),px=(x-left)*size,py=(y-top)*size,visible=game.isVisible(x,y);if(!c)continue;
@@ -150,7 +156,7 @@
   function saveSettings(){const next=readSettings();if(!next)return false;settings=next;try{localStorage.setItem(PREFS,JSON.stringify(settings));}catch{toast('浏览器禁止保存参数，本次页面内仍然生效。');return true;}toast('参数已保存，下一局生效。');return true;}
   function startNew(seed){game=new PirateGame(settings,seed||Date.now());ship.src=game.config.assets.ship;selection={x:game.s.x,y:game.s.y};center={...selection};tab='hold';$('#modal').close();render();persist();window.scrollTo({top:0,behavior:'smooth'});toast('新的海路已展开。先为澎湖筹粮。');}
   function restart(){modal('重新扬帆',`<p>本局已航行 ${game.s.day} 日。重新开始会替换这台设备上的当前存档，船只、货物与声望都将归零。</p><div class="modal-actions">${button('随机开局','confirmRestart','','primary')}${button('使用相同种子重开','sameSeed')}${button('保留当前航程','close')}</div>`);}
-  function findPort(id){const p=game.world.ports.find(p=>p.id===id);if(!p)return;center={x:p.x,y:p.y};selection={...center};$('#modal').close();render();$('.chart-card').scrollIntoView({behavior:'smooth',block:'start'});toast(`已定位${p.name}。查看完可点「回到船位」。`);}
+  function findPort(id){const p=game.world.ports.find(p=>p.id===id);if(!p)return;center={x:p.x,y:p.y};selection={...center};$('#modal').close();render();$('.game-layout').scrollIntoView({behavior:'smooth',block:'nearest'});toast(`已定位${p.name}。查看完可点「回到船位」。`);}
   document.addEventListener('click',event=>{
     const b=event.target.closest('button');if(!b||b.disabled)return;if(b.dataset.tab){tab=b.dataset.tab;renderDeck();return;}
     const a=b.dataset.action,v=b.dataset.value;if(!a)return;event.preventDefault();
@@ -182,9 +188,9 @@
   document.addEventListener('submit',e=>{if(e.target.id==='wage-form'){e.preventDefault();$('[data-action="saveWage"]').click();}});
   canvas.addEventListener('pointerdown',e=>{pan={x:e.clientX,y:e.clientY,center:{...center},moved:false};canvas.setPointerCapture(e.pointerId);});
   canvas.addEventListener('pointermove',e=>{if(!pan)return;const dx=e.clientX-pan.x,dy=e.clientY-pan.y;if(Math.abs(dx)+Math.abs(dy)>6)pan.moved=true;if(pan.moved){center={x:Math.max(0,Math.min(W.GEO.width-1,pan.center.x-dx/mapMetrics.size)),y:Math.max(0,Math.min(W.GEO.height-1,pan.center.y-dy/mapMetrics.size))};drawMap();}});
-  canvas.addEventListener('pointerup',e=>{if(!pan)return;const moved=pan.moved;pan=null;if(moved)return;const r=canvas.getBoundingClientRect(),x=Math.floor((e.clientX-r.left)/mapMetrics.size+mapMetrics.left),y=Math.floor((e.clientY-r.top)/mapMetrics.size+mapMetrics.top);if(!game.world.get(x,y))return;selection={x,y};renderDecision();drawMap();if(innerWidth<761&&!game.s.event&&!game.s.combat)$('#decision').scrollIntoView({behavior:'smooth',block:'nearest'});});
+  canvas.addEventListener('pointerup',e=>{if(!pan)return;const moved=pan.moved;pan=null;if(moved)return;const r=canvas.getBoundingClientRect(),x=Math.floor((e.clientX-r.left)/mapMetrics.size+mapMetrics.left),y=Math.floor((e.clientY-r.top)/mapMetrics.size+mapMetrics.top);if(!game.world.get(x,y))return;selection={x,y};renderDecision();drawMap();});
   canvas.addEventListener('pointercancel',()=>{pan=null;});
-  document.addEventListener('keydown',e=>{if($('#modal').open||['INPUT','TEXTAREA','SELECT','BUTTON'].includes(document.activeElement?.tagName))return;const dir={ArrowUp:[0,-1],w:[0,-1],ArrowDown:[0,1],s:[0,1],ArrowLeft:[-1,0],a:[-1,0],ArrowRight:[1,0],d:[1,0]}[e.key];if(!dir)return;e.preventDefault();act(()=>game.move(game.s.x+dir[0],game.s.y+dir[1]),{locate:true});});
+  document.addEventListener('keydown',e=>{if($('#modal').open||document.activeElement?.closest('.quest-strip, .decision-card')||['INPUT','TEXTAREA','SELECT','BUTTON'].includes(document.activeElement?.tagName))return;const dir={ArrowUp:[0,-1],w:[0,-1],ArrowDown:[0,1],s:[0,1],ArrowLeft:[-1,0],a:[-1,0],ArrowRight:[1,0],d:[1,0]}[e.key];if(!dir)return;e.preventDefault();act(()=>game.move(game.s.x+dir[0],game.s.y+dir[1]),{locate:true});});
   $('#modal').addEventListener('click',e=>{if(e.target===$('#modal')){const r=$('#modal').getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)$('#modal').close();}});
   new ResizeObserver(()=>drawMap()).observe($('.map-wrap'));
   render();persist();

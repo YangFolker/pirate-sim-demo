@@ -11,3 +11,168 @@
 .morale-bar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:-8px 0 20px;padding:10px 15px;border:1px solid #b7c5ad;border-radius:5px;background:#e5eadb80;color:#506957}.morale-summary{display:flex;align-items:center;gap:12px;font-size:12px}.morale-summary .meter{width:90px;margin:0;flex:none}.morale-bar small{font-size:10px}.morale-bar.low{color:var(--danger);border-color:#cbac90;background:#f0e1d580}.morale-bar.low .meter span{background:var(--danger)}.shipyard-entry{display:flex;width:100%;justify-content:space-between;align-items:center;padding:12px;margin-top:10px;text-align:left;border-color:#aaa787;background:#e7e7d6;font-size:13px}.shipyard-entry small{display:block;color:var(--muted);font-size:10px;margin-top:3px}.shipyard-overview{display:flex;flex-wrap:wrap;gap:8px 20px;padding:13px;background:#e6eadc;border-radius:5px;font-size:12px;margin-bottom:15px}.shipyard-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.shipyard-upgrade{padding:16px;border:1px solid var(--line);border-radius:5px;display:flex;flex-direction:column}.shipyard-upgrade.installed{background:#e5ebdd;border-color:#9db199}.shipyard-upgrade .subheading{align-items:center;font-size:14px}.shipyard-upgrade p{flex:1;margin-bottom:13px}.upgrade-reason{color:var(--danger);margin-top:5px}.shipyard-upgrade button{font-size:12px;min-height:40px}
 @media(max-width:760px){.morale-bar{flex-direction:column;align-items:stretch;gap:6px;padding:10px 12px;margin:-2px 0 14px}.morale-summary{justify-content:space-between;gap:8px}.morale-summary .meter{width:50px}.morale-bar small{font-size:10px}.shipyard-entry{min-height:55px;font-size:14px}.shipyard-grid{grid-template-columns:1fr}.shipyard-upgrade{padding:14px}}
 @media(max-width:760px){.body-copy{font-size:14px;line-height:1.8}.choice span{font-size:14px}.choice small{font-size:11px}.choice{min-height:61px}.trade-row strong{font-size:13px}.trade-row small{font-size:11px}.trade-actions button{min-width:40px;min-height:40px}.trade-actions input,.setting-row input{font-size:16px;min-height:40px}.combat-grid button{min-height:65px;font-size:14px}.combat-grid small{font-size:11px}.nearby button{min-height:40px;font-size:12px}.port-services button{min-height:48px;font-size:12px}.port-services small{font-size:10px}.combat-player{font-size:12px}.module button{min-height:36px}.stat-detail{font-size:9px;min-height:26px}.modal-body p,.modal-body ul,.modal-body ol{font-size:13px}}
+/* 航行工作区：任务在顶部，海图与当前信息始终并列。 */
+.app-shell{padding:0 28px}
+.masthead{height:72px}
+.brand{font-size:24px;gap:10px}
+.brand small{margin-top:3px}
+.voyage-console{height:calc(100svh - 84px);max-height:940px;min-height:480px;display:grid;grid-template-rows:auto auto auto minmax(0,1fr);gap:9px;padding-top:10px}
+.voyage-heading{display:block;padding:0;min-width:0}
+.voyage-title{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:7px}
+.voyage-title h1{font:21px/1.2 var(--serif);letter-spacing:1px}
+.date-block{font-size:12px;line-height:1.35}
+.date-block small{margin-top:2px;font-size:10px}
+.quest-strip{display:flex;gap:8px;overflow-x:auto;scroll-snap-type:x proximity;scrollbar-width:thin;padding-bottom:2px}
+.quest-strip .quest-line{flex:1 0 265px;min-width:0;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;border:1px solid var(--line);border-radius:5px;background:#faf7edb3;padding:8px 11px;scroll-snap-align:start}
+.quest-copy{min-width:0}
+.quest-copy strong{font-size:12px;font-weight:600;line-height:1.4}
+.quest-copy small{font-size:10px;line-height:1.45;margin-top:3px}
+.quest-strip .quest-progress{width:100%;height:3px;margin-top:5px}
+.quest-meta{display:flex;flex-direction:column;align-items:flex-end;gap:4px;font-size:11px;color:var(--accent);white-space:nowrap}
+.quest-meta button{margin:0;font-size:10px;padding:4px 7px;min-height:28px;color:var(--ink)}
+.stats{gap:8px;margin:0;grid-template-columns:repeat(4,minmax(0,1fr))}
+.stat{padding:8px 11px;grid-template-columns:27px minmax(0,1fr);gap:8px;min-width:0}
+.stat-icon{width:25px;height:25px;font-size:18px;line-height:23px}
+.stat-top{flex-wrap:nowrap;gap:5px}
+.stat-number{font-size:21px;white-space:nowrap}
+.stat-number small{font-size:10px}
+.stat-detail{font-size:10px;line-height:1.35;margin-top:4px;min-height:0;overflow-wrap:anywhere}
+.stat .meter{margin-top:5px;height:2px}
+.morale-bar{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:8px;margin:0;padding:6px 10px;align-items:center}
+.morale-summary{gap:10px;font-size:11px;justify-content:flex-start;min-width:0;flex-wrap:wrap}
+.morale-summary .meter{width:60px}
+.morale-bar .wage-entry{padding:5px 9px;font-size:11px;min-height:32px;align-self:center}
+.morale-bar>small{font-size:10px}
+.game-layout{grid-template-columns:minmax(0,1.55fr) minmax(290px,1fr);gap:12px;align-items:stretch;min-height:0;min-width:0}
+.chart-card{display:flex;flex-direction:column;min-height:0;min-width:0}
+.panel-heading{height:42px;min-height:42px;padding:0 12px;gap:7px}
+.panel-heading>div{min-width:0;display:flex;align-items:center}
+.panel-heading strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;letter-spacing:0}
+.panel-heading small{white-space:nowrap;font-size:9px}
+.panel-heading button{flex:none;min-height:32px;white-space:nowrap;padding:5px;font-size:11px}
+.status-dot{flex:none;margin-right:6px}
+.map-wrap{height:auto;min-height:0;flex:1}
+.chart-footer{flex:none;gap:10px;padding:6px 10px;font-size:10px;line-height:1.3}
+.chart-footer button{padding:5px;min-height:32px}
+.decision-column{gap:0;display:grid;grid-template-rows:auto auto minmax(0,1fr);border:1px solid var(--line);border-radius:7px;overflow:hidden;background:#faf7ed90;min-width:0;min-height:0}
+.decision-heading{display:flex;align-items:center;justify-content:space-between;gap:5px;padding:10px 12px;border-bottom:1px solid var(--line);font-size:12px}
+.decision-heading small{font-size:10px;color:var(--muted)}
+.decision-card{border:0;border-radius:0;padding:13px;min-height:0;min-width:0;overflow:auto;overscroll-behavior-y:contain;scrollbar-width:thin;scrollbar-color:#aaa992 transparent;overflow-wrap:anywhere;background:transparent}
+.decision-card h2{font-size:20px;margin-bottom:9px}
+.section-kicker{letter-spacing:1px;margin-bottom:7px;gap:5px;flex-wrap:wrap}
+.decision-card .body-copy{font-size:12px;line-height:1.65;margin-bottom:11px}
+.location-art{gap:10px;margin-bottom:10px}
+.location-art img{width:40px;height:47px}
+.location-art .body-copy{font-size:11px;margin:0}
+.choice-list{gap:6px}
+.choice{padding:9px 10px;min-height:0}
+.choice span{font-size:12px}
+.choice small{font-size:10px;line-height:1.5;margin-top:3px}
+.shipyard-entry{padding:9px;margin-top:8px;font-size:12px;min-height:0;gap:5px}
+.shipyard-entry small{font-size:10px}
+.trade-list{margin:9px 0}
+.trade-row{padding:8px 0;gap:5px}
+.trade-actions button{padding:5px 7px;min-height:34px;min-width:32px}
+.trade-actions input{min-height:34px;width:38px;padding:4px 1px}
+.port-services button{padding:6px 3px;min-height:40px;font-size:11px}
+.combat-player{margin-bottom:9px;font-size:11px;padding:7px}
+.combat-grid{gap:6px}
+.combat-grid button{padding:8px;min-height:48px;font-size:12px}
+.combat-grid small{font-size:10px;margin-top:3px}
+.combat-notes{min-height:0;margin-bottom:9px}
+.enemy-bar{margin:9px 0}
+.escort-bar{margin:0;padding:8px 10px;gap:6px;font-size:11px;border-top:0;border-bottom:1px solid var(--line)}
+.escort-bar>div{flex-basis:100%}
+.escort-bar .primary{margin-left:0}
+.escort-bar button{padding:6px 7px;min-height:32px;font-size:11px}
+.below-deck{margin-top:12px;padding:0 16px 15px}
+.deck-tabs{margin-bottom:13px;gap:23px}
+.deck-tabs button{padding:11px 0 9px;font-size:12px}
+.hint{margin-top:8px;line-height:1.6}
+@media(max-width:760px){
+  .app-shell{padding:0 10px}
+  .masthead{height:54px}
+  .brand{font-size:19px;gap:7px;letter-spacing:1px}
+  .brand small{display:none}
+  .seal{font-size:22px;padding:0 4px;border-width:2px}
+  .masthead nav .text-button{font-size:11px;padding:6px 5px;min-height:34px}
+  .masthead nav .icon-button{min-width:32px}
+  .voyage-console{height:calc(100svh - 64px);min-height:0;max-height:920px;gap:6px;padding-top:7px}
+  .voyage-title{margin-bottom:5px;gap:7px}
+  .voyage-title h1{font-size:18px;flex:none}
+  .date-block{font-size:11px}
+  .date-block small{font-size:9px}
+  .quest-strip{gap:6px}
+  .quest-strip .quest-line{flex-basis:calc(100% - 20px);padding:6px 8px;gap:7px}
+  .quest-strip .quest-line:only-child{flex-basis:100%}
+  .quest-copy strong{font-size:12px}
+  .quest-copy small{font-size:10px;margin-top:2px}
+  .quest-meta{font-size:10px;gap:2px}
+  .quest-meta button{min-height:28px;padding:3px 6px}
+  .stats{gap:4px}
+  .stat{display:block;padding:6px;min-width:0}
+  .stat-icon{display:none}
+  .stat-top{display:block;line-height:1.2}
+  .stat-label{display:block;font-size:10px;margin-bottom:2px}
+  .stat-number{font-size:19px;display:block}
+  .stat-number small{font-size:9px}
+  .stat-detail{font-size:9px;line-height:1.25;margin-top:3px;min-height:0}
+  .stat .meter{margin-top:4px}
+  .morale-bar{grid-template-columns:minmax(0,1fr) auto;gap:1px 6px;padding:5px 7px}
+  .morale-summary{grid-column:1;grid-row:1;gap:7px;font-size:11px;flex-wrap:nowrap}
+  .morale-summary .meter{display:none}
+  .morale-bar>small{grid-column:1;grid-row:2;font-size:10px}
+  .morale-bar .wage-entry{grid-column:2;grid-row:1 / 3;min-height:34px;font-size:11px;padding:5px 7px}
+  .game-layout{grid-template-columns:minmax(0,.92fr) minmax(0,1.08fr);gap:7px}
+  .panel-heading{height:38px;min-height:38px;padding:0 6px;gap:3px}
+  .panel-heading strong{font-size:11px}
+  .panel-heading .status-dot{display:none}
+  .panel-heading button{font-size:10px;padding:3px;min-height:32px}
+  .chart-stamp,.compass,.map-caption{display:none}
+  .chart-footer{gap:5px;padding:6px;font-size:9px;justify-content:space-between}
+  .legend{width:5px;height:5px;margin-right:3px}
+  .chart-footer button{flex-basis:100%;margin:1px 0 0;min-height:32px;padding:4px;border:1px solid var(--line);font-size:11px}
+  .decision-heading{padding:9px 7px;min-height:38px;font-size:11px}
+  .decision-heading small{font-size:9px}
+  .decision-card{padding:8px}
+  .decision-card h2{font-size:17px;line-height:1.4;margin-bottom:8px}
+  .decision-card .body-copy{font-size:12px;line-height:1.6;margin-bottom:9px}
+  .section-kicker{font-size:10px;letter-spacing:0;gap:4px;margin-bottom:6px}
+  .tag{font-size:9px;padding:1px 4px}
+  .location-art{display:none}
+  .port-services{grid-template-columns:1fr 1fr;gap:5px}
+  .port-services button:last-child{grid-column:1 / -1}
+  .port-services button{min-height:34px;font-size:11px;padding:5px 2px}
+  .port-services small{font-size:9px}
+  .port-services button:last-child small{display:inline;margin-left:5px}
+  .shipyard-entry{font-size:12px;padding:7px;min-height:44px}
+  .shipyard-entry small{font-size:9px;line-height:1.5}
+  .trade-row{grid-template-columns:minmax(0,1fr);padding:7px 0;gap:5px}
+  .trade-row strong{font-size:12px}
+  .trade-row small{font-size:10px;line-height:1.5}
+  .trade-actions{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1fr);gap:5px}
+  .trade-actions input{width:100%;min-width:0;font-size:16px;min-height:34px}
+  .trade-actions button{min-width:0;min-height:34px;padding:4px;font-size:12px}
+  .decision-card button.full{font-size:12px;padding:7px;min-height:34px}
+  .choice{padding:8px;min-height:0}
+  .choice span{font-size:12px}
+  .choice small{font-size:11px;line-height:1.5}
+  .choice-arrow{display:none!important}
+  .nearby{gap:4px;margin-top:9px}
+  .nearby button{padding:4px 1px;font-size:10px;min-height:32px}
+  .combat-grid{grid-template-columns:1fr}
+  .combat-grid button{font-size:12px;min-height:44px}
+  .combat-grid small{font-size:10px}
+  .combat-player{font-size:10px;line-height:1.6;padding:6px}
+  .combat-flee{font-size:12px;margin-top:8px;padding:7px}
+  .combat-notes{font-size:11px}
+  .enemy-bar{margin:8px 0}
+  .end-stats{gap:6px;margin:10px 0}
+  .end-stats div{padding:6px}
+  .end-stats strong{font-size:20px}
+  .end-portrait{display:none}
+  .escort-bar{padding:6px;gap:5px;font-size:10px}
+  .escort-bar button{font-size:11px;width:100%;min-height:32px}
+  .escort-bar small{font-size:9px}
+  .below-deck{margin-top:10px;padding:0 12px 13px}
+}

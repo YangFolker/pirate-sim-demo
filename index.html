@@ -16,17 +16,25 @@
       <nav><button class="text-button" data-action="atlas">海域全图</button><button class="text-button" data-action="help">玩法</button><button class="icon-button" data-action="settings" aria-label="调整参数与素材">⚙</button></nav>
     </header>
     <main>
-      <section class="voyage-heading"><div><p class="eyebrow">一叶入海，自此由你</p><h1>从澎湖，驶向未知。</h1></div><div class="date-block"><span id="turn-label">航海第 1 日</span><small id="weather-label">东北风 · 晴</small></div></section>
+      <div class="voyage-console">
+      <section class="voyage-heading" aria-label="航程委托与日期">
+        <div class="voyage-title"><h1>航程委托</h1><div class="date-block"><span id="turn-label">航海第 1 日</span><small id="weather-label">东北风 · 晴</small></div></div>
+        <div id="quests" class="quest-strip" aria-label="航程委托列表" tabindex="0"></div>
+      </section>
       <section id="stats" class="stats" aria-label="船只状态"></section>
       <section id="morale" class="morale-bar" aria-label="船员士气" aria-live="polite"></section>
       <div class="game-layout">
         <section class="chart-card" aria-label="航海地图">
-          <div class="panel-heading"><div><span class="status-dot"></span><strong id="location-label">澎湖锚地</strong><small id="position-label"></small></div><button class="text-button" data-action="recenter">⌾ 回到船位</button></div>
+          <div class="panel-heading"><div><span class="status-dot"></span><strong id="location-label">澎湖锚地</strong><small id="position-label"></small></div><button class="text-button" data-action="recenter" aria-label="回到船位">⌾ 船位</button></div>
           <div class="map-wrap"><canvas id="map" tabindex="0" aria-label="海域网格地图，可点击相邻水域航行，或使用方向键移动"></canvas><div class="chart-stamp">西太平洋<br><small>WESTERN PACIFIC</small></div><div class="compass" aria-hidden="true">北<span>✧</span>南</div><div class="map-caption">拖动查看海图 · 点选相邻格航行</div></div>
-          <div class="chart-footer"><span><i class="legend current"></i>本船</span><span><i class="legend visible"></i>当前视野 3×3</span><span><i class="legend fog"></i>情报未知</span><button class="text-button" data-action="wait">抛锚等候 1 日</button></div>
-          <div id="escort-strip"></div>
+          <div class="chart-footer"><span><i class="legend current"></i>本船</span><span><i class="legend visible"></i>视野 3×3</span><span><i class="legend fog"></i>未知</span><button class="text-button" data-action="wait">抛锚等候 1 日</button></div>
         </section>
-        <aside class="decision-column"><section id="decision" class="decision-card" aria-live="polite"></section><section id="quests" class="quest-card"></section></aside>
+        <aside class="decision-column" aria-label="当前海域信息">
+          <div class="decision-heading"><strong>当前信息</strong><small>上下滑动查看</small></div>
+          <div id="escort-strip"></div>
+          <section id="decision" class="decision-card" aria-label="当前信息与操作" aria-live="polite" tabindex="0"></section>
+        </aside>
+      </div>
       </div>
       <section class="below-deck">
         <div class="deck-tabs" role="tablist" aria-label="船务"><button role="tab" data-tab="hold" aria-selected="true">船舱与装备</button><button role="tab" data-tab="relations" aria-selected="false">旗帜与局势</button><button role="tab" data-tab="journal" aria-selected="false">航海日志 <span id="log-dot"></span></button></div>
